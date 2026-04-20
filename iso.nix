@@ -668,6 +668,46 @@ HISTEOF
           ${pkgs.xfce.xfce4-panel}/bin/xfce4-panel --restart >> $MYLOG 2>&1 || true
         fi
 
+        # Session-menu (actions plugin) — scan at runtime like the clock, because
+        # xfce4-panel auto-inserts plugins into panel-1 and reshuffles IDs so the
+        # static XML plugin-7 definition may never land in the live xfconfd state.
+        ACTIONS_PID=""
+        for i in $(seq 1 30); do
+          ptype=$($XQ -c xfce4-panel -p /plugins/plugin-$i 2>/dev/null)
+          if [ "$ptype" = "actions" ]; then
+            ACTIONS_PID="plugin-$i"
+            break
+          fi
+        done
+        echo "actions plugin id = $ACTIONS_PID" >> $MYLOG
+        if [ -n "$ACTIONS_PID" ]; then
+          # Plugin found — ensure appearance=1 (username dropdown button)
+          $XQ -c xfce4-panel -p /plugins/$ACTIONS_PID/appearance -n -t uint -s 1 2>>$MYLOG \
+            && echo "actions appearance=1 set on $ACTIONS_PID" >> $MYLOG \
+            || echo "actions appearance set FAILED" >> $MYLOG
+          ${pkgs.xfce.xfce4-panel}/bin/xfce4-panel --restart >> $MYLOG 2>&1 || true
+        else
+          # Not found — define plugin-30 as actions and append to panel-1's plugin-ids
+          echo "actions plugin not found, adding as plugin-30" >> $MYLOG
+          $XQ -c xfce4-panel -p /plugins/plugin-30         -n -t string -s "actions" 2>>$MYLOG
+          $XQ -c xfce4-panel -p /plugins/plugin-30/appearance -n -t uint   -s 1       2>>$MYLOG
+          # Read current panel-1/plugin-ids and append 30
+          RAW_IDS=$($XQ -c xfce4-panel -p /panel-1/plugin-ids 2>/dev/null)
+          NEW_ARGS=$(${pkgs.python3}/bin/python3 -c "
+import re, sys
+ids = [int(x) for x in re.findall(r'\d+', '''$RAW_IDS''')]
+if 30 not in ids:
+    ids.append(30)
+print(' '.join(['-t int -s ' + str(i) for i in ids]))
+")
+          echo "panel-1 new plugin-ids args: $NEW_ARGS" >> $MYLOG
+          $XQ -c xfce4-panel -p /panel-1/plugin-ids -r 2>/dev/null || true
+          eval "$XQ -c xfce4-panel -p /panel-1/plugin-ids -n $NEW_ARGS" 2>>$MYLOG \
+            && echo "plugin-30 (actions) appended to panel-1" >> $MYLOG \
+            || echo "panel-1/plugin-ids append FAILED" >> $MYLOG
+          ${pkgs.xfce.xfce4-panel}/bin/xfce4-panel --restart >> $MYLOG 2>&1 || true
+        fi
+
         touch "$PANEL_FLAG"
         echo "Panel setup done" >> $MYLOG
       fi

@@ -26,8 +26,7 @@ Useful links
 * bitly link to it - https://bit.ly/codeclubnxl
 
 TODO
-
-NOT DONE (gave up — action-buttons xfconf settings didn't take effect on this XFCE version)
+- xfce using litterbox after loading a project seems take over machine
 - hide lock screen,switch user,suspend, logout menu items 
 - remove confirm option from shutdown menu item
 
@@ -37,6 +36,7 @@ DONE
 - hide all XFCE desktop icons (xfce4-desktop /desktop-icons/style=0 via xfconf-query in myautostart)
 - preloaded zsh history with kilocode/btop/python3/node/nmap (seeded in system.activationScripts.nixosZshrc)
 - disable screen locking on the live CD (services.xserver.desktopManager.xfce.enableScreensaver = false)
+- xfce - window controls, can we add ability to resize from any side - fixed via 4px resize borders in PRO-dark theme
 - add an app shortcut to open kilocode  in a console, pin it to the panel
 - disable workspace switcher/not add workspace
 - firefox maximised on start via xulstore.json sizemode (--width/--height flags caused GNOME login loop
