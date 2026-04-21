@@ -54,7 +54,7 @@ XPM
   };
 
   # Panel layout:
-  #   Panel 1 (top): app-menu | chrome-launcher | tasklist(expand) | systray | clock | session-menu
+  #   Panel 1 (top): app-menu | chrome-launcher | separator(expand) | systray | clock | session-menu
   #   Panel 2 (bottom dock): <expand> | show-desktop | terminal | files | chrome | appfinder | btop | <expand>
   xfcePanelXml = pkgs.writeText "xfce4-panel.xml" ''
     <?xml version="1.0" encoding="UTF-8"?>
@@ -72,7 +72,7 @@ XPM
         <property name="plugin-ids" type="array">
           <value type="sint" value="1"/>
           <value type="sint" value="2"/>
-          <value type="sint" value="4"/>
+          <value type="sint" value="3"/>
           <value type="sint" value="5"/>
           <value type="sint" value="6"/>
           <value type="sint" value="7"/>
@@ -101,11 +101,9 @@ XPM
             <value type="string" value="codeclub-chrome.desktop"/>
           </property>
         </property>
-        <property name="plugin-4" type="string" value="tasklist">
-          <property name="flat-buttons" type="bool" value="true"/>
-          <property name="show-handle" type="bool" value="false"/>
-          <property name="grouping" type="uint" value="1"/>
+        <property name="plugin-3" type="string" value="separator">
           <property name="expand" type="bool" value="true"/>
+          <property name="style" type="uint" value="0"/>
         </property>
         <property name="plugin-5" type="string" value="systray"/>
         <property name="plugin-6" type="string" value="clock"/>
@@ -620,20 +618,18 @@ HISTEOF
         # clock/systray to the middle.
         $XQ -c xfce4-panel -p /panel-1/plugin-ids -r 2>/dev/null || true
         $XQ -c xfce4-panel -p /panel-1/plugin-ids \
-          -n -t int -s 1 -t int -s 2 -t int -s 4 -t int -s 5 -t int -s 6 -t int -s 7 \
+          -n -t int -s 1 -t int -s 2 -t int -s 3 -t int -s 5 -t int -s 6 -t int -s 7 \
           2>>$MYLOG && echo "panel-1/plugin-ids set OK" >> $MYLOG \
                     || echo "panel-1/plugin-ids FAILED" >> $MYLOG
 
         # plugin-1: app menu
         $XQ -c xfce4-panel -p /plugins/plugin-1 -n -t string -s "applicationsmenu" 2>>$MYLOG
 
-        # plugin-4: expanding tasklist — fills the middle, pushes systray/clock/actions right
-        $XQ -c xfce4-panel -p /plugins/plugin-4              -n -t string -s "tasklist" 2>>$MYLOG
-        $XQ -c xfce4-panel -p /plugins/plugin-4/flat-buttons -n -t bool   -s true       2>>$MYLOG
-        $XQ -c xfce4-panel -p /plugins/plugin-4/show-handle  -n -t bool   -s false      2>>$MYLOG
-        $XQ -c xfce4-panel -p /plugins/plugin-4/grouping     -n -t uint   -s 1          2>>$MYLOG
-        $XQ -c xfce4-panel -p /plugins/plugin-4/expand       -n -t bool   -s true       2>>$MYLOG \
-          && echo "panel-1 plugin-4 (tasklist/expand) set OK" >> $MYLOG
+        # plugin-3: expanding separator — pushes systray/clock/actions to the right
+        $XQ -c xfce4-panel -p /plugins/plugin-3        -n -t string -s "separator" 2>>$MYLOG
+        $XQ -c xfce4-panel -p /plugins/plugin-3/expand -n -t bool   -s true        2>>$MYLOG
+        $XQ -c xfce4-panel -p /plugins/plugin-3/style  -n -t uint   -s 0           2>>$MYLOG \
+          && echo "panel-1 plugin-3 (separator/expand) set OK" >> $MYLOG
 
         # plugin-5: systray (wifi, notifications, etc.)
         $XQ -c xfce4-panel -p /plugins/plugin-5 -n -t string -s "systray" 2>>$MYLOG
