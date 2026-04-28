@@ -74,6 +74,18 @@ clock-show-seconds=true
 
   services.printing.enable = true;
 
+  # Broadcom STA (wl) driver for legacy Broadcom wireless chips on the
+  # CodeClub PCs that won't otherwise associate. Marked insecure in
+  # nixpkgs (out-of-tree, no security support), so we whitelist it. The
+  # whitelist entry must match the package name, which embeds the running
+  # kernel version (e.g. broadcom-sta-6.30.223.271-59-6.12.78) — derive
+  # it from the package itself so it tracks kernel bumps automatically.
+  boot.extraModulePackages = [ config.boot.kernelPackages.broadcom_sta ];
+
+  nixpkgs.config.permittedInsecurePackages = [
+    config.boot.kernelPackages.broadcom_sta.name
+  ];
+
   nixpkgs.config.allowUnfree = true;
 
   environment.systemPackages = with pkgs; [  
